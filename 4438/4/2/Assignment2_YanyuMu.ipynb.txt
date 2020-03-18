@@ -1,0 +1,248 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<h1 align=\"center\">ECE 4438B Advanced Image Processing and Analysis</h1>\n",
+    "<h2 align=\"center\"> Assignment #2</h2>\n",
+    "<h3 align=\"center\"> Yanyu Mu, [ymu2@uwo.ca](mailto:ymu2@uwo.ca?subject=Assignment #2)</h3>\n",
+    "<h4 align=\"center\"> Department of Electrical and Computer Engineering</h4>\n",
+    "<h4 align=\"center\"> Western University</h4>\n",
+    "<h4 align=\"center\"> March 16, 2018</h4>\n",
+    "<h4 align=\"center\"> Submitted to Elvis C.S. Chen</h4>"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "import SimpleITK as sitk\n",
+    "\n",
+    "import numpy as np\n",
+    "\n",
+    "import matplotlib.pyplot as plt\n",
+    "\n",
+    "from RGB2Gray import RGB2Gray\n",
+    "\n",
+    "from myOtsuThresholding import myOtsuThresholding\n",
+    "\n",
+    "from myMaxEntropy import myMaxEntropy"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "sitk.WriteImage(RGB2Gray('inputImg_RGB.jpg'),\"outputImg_Gray.jpg\")    # create output image\n",
+    "outputImg_Gray = sitk.ReadImage(\"outputImg_Gray.jpg\")    # read output image\n",
+    "sitk.Show(outputImg_Gray)    # display output image"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/Users/yanyumu/anaconda3/envs/sitkpy/lib/python3.4/site-packages/matplotlib/axes/_axes.py:6087: UserWarning: 2D hist input should be nsamples x nvariables;\n",
+      " this looks transposed (shape is 185 x 272)\n",
+      "  '(shape is %d x %d)' % inp.shape[::-1])\n"
+     ]
+    },
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAXoAAAEICAYAAABRSj9aAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz\nAAALEgAACxIB0t1+/AAAFPtJREFUeJzt3X+w5XV93/HnKxBpKgjo3iAFzAJFAbPtmuzQpFVKahqR\nIUE7GdmNsTClXWkMkx/NZBZt45126DQ26GQmSrqMjJtU+VEJkRbTBIEEbTW6OCsuLoRfy7Bk3b2B\nIlAtceHdP+73xsPl/trz4557P/f5mDlzv+fz/Z7zfX/u997X+Z7P93u+J1WFJKld3zfuAiRJo2XQ\nS1LjDHpJapxBL0mNM+glqXEGvSQ1zqBXM5Lcl+S8cdchrTQGvVaNJHuT/OSstkuTfAGgqt5YVX+6\nyHOsT1JJjhxhqdKKYtBLQ+QLiFYig17N6N3jT3JOkp1JnklyIMmHu8Xu7n4+neS5JD+e5PuS/Nsk\njyU5mOT3khzb87z/vJv3ZJJ/N2s9k0k+neS/JnkGuLRb9xeTPJ1kf5LfSfKKnuerJL+Q5MEkzyb5\nD0lOT/K/u3pv6l1eGpRBr1b9NvDbVfUq4HTgpq793O7ncVV1dFV9Ebi0u/0EcBpwNPA7AEnOBj4G\nvBs4ETgWOGnWui4CPg0cB3wSeAH4FWAd8OPAW4FfmPWYtwE/CvwY8OvAduDngVOAHwa2DNB36SUM\neq02f9jtKT+d5GmmQ3gu3wX+bpJ1VfVcVX1pged8N/Dhqnqkqp4DrgQ2d8MwPwv896r6QlX9NfAb\nwOwLRH2xqv6wql6squ9U1T1V9aWqOlRVe4H/AvzjWY/5UFU9U1X3AbuBP+nW/y3gj4A3Lf1XIi3M\noNdq846qOm7mxsv3lGdcBrweuD/JV5JcuMBz/h3gsZ77jwFHAid08x6fmVFV3waenPX4x3vvJHl9\nkv+R5JvdcM5/ZHrvvteBnunvzHH/6AXqlQ6LQa8mVdWDVbUF+EHgN4FPJ3klL98bB/hL4Id67r8O\nOMR0+O4HTp6ZkeQHgNfMXt2s+9cA9wNndENH7wfSf2+kwRj0alKSn08yUVUvAk93zS8CU93P03oW\nvx74lSSnJjma6T3wG6vqENNj7z+d5B92B0gnWTy0jwGeAZ5Lcibwr4fVL6kfBr1adT5wX5LnmD4w\nu7kbP/82cBXwv7px/h8DrgN+n+kzch4F/h9wBUA3hn4FcAPTe/fPAQeB5xdY968BPwc8C1wL3Dj8\n7klLF794RFq6bo//aaaHZR4ddz3SUrhHLy0iyU8n+dvdGP9vAV8H9o63KmnpDHppcRcxfcD2L4Ez\nmB4G8q2wVg2HbiSpce7RS1LjVsQFmNatW1fr168fdxmStKrcc889f1VVE4sttyKCfv369ezcuXPc\nZUjSqpLkscWXcuhGkppn0EtS4wx6SWrcokGf5Lruyxh297TdmGRXd9ubZFfXvj7Jd3rm/e4oi5ck\nLW4pB2M/wfSXMPzeTENVXTwzneRq4Fs9yz9cVRuHVaAkaTCLBn1V3Z1k/VzzkgR4F/BPhluWJGlY\nBh2jfwtwoKoe7Gk7tRu2+bMkb5nvgUm2dt/puXNqamrAMiRJ8xk06LcwfS3vGfuB13VDN78KfCrJ\nq+Z6YFVtr6pNVbVpYmLR8/0lSX3qO+i779P8Z/Rca7uqnq+qJ7vpe4CHmf46N0nSmAyyR/+TwP1V\ntW+mIclEkiO66dOYvtLfI4OVKEkaxFJOr7we+CLwhiT7klzWzdrMS4dtAM4F7u1Ot/w0cHlVPTXM\ngpfbhh0bxl2CJA1kKWfdbJmn/dI52m4Gbh68rBVi8lg49XXjrkKSBuInYyWpcQa9JDXOoJekxhn0\nktQ4g16SGmfQS1LjDHpJapxBL0mNM+glqXEGvSQ1zqCXpMYZ9JLUOINekhpn0EtS4wx6SWqcQS9J\njTPoJalxBr0kNc6gl6TGGfSS1DiDXpIat2jQJ7kuycEku3vaJpM8kWRXd7ugZ96VSR5K8kCSt42q\ncEnS0ixlj/4TwPlztH+kqjZ2t88CJDkb2Ay8sXvMx5IcMaxiJUmHb9Ggr6q7gaeW+HwXATdU1fNV\n9SjwEHDOAPVJkgY0yBj9FUnu7YZ2ju/aTgIe71lmX9f2Mkm2JtmZZOfU1NQAZUiSFtJv0F8DnAZs\nBPYDVx/uE1TV9qraVFWbJiYm+ixDkrSYvoK+qg5U1QtV9SJwLd8bnnkCOKVn0ZO7NknSmPQV9ElO\n7Ln7TmDmjJxbgc1JjkpyKnAG8OXBSpQkDeLIxRZIcj1wHrAuyT7gg8B5STYCBewF3gtQVfcluQn4\nBnAIeF9VvTCa0iVJS7Fo0FfVljmaP77A8lcBVw1S1Eqwfttt7P1b465CkgbnJ2MlqXEGvSQ1zqCX\npMY1EfTrt9027hIkacVqIuglSfNrJ+gnjx13BZK0IrUT9JKkOTUZ9B+9/M5xlyBJK0aTQS9J+h6D\nXpIaZ9BLUuMMeklqnEEvSY0z6CWpcQa9JDXOoJekxhn0ktQ4g16SGmfQz+G1d+0adwmSNDQGvSQ1\nzqCXpMYtGvRJrktyMMnunrb/nOT+JPcmuSXJcV37+iTfSbKru/3uKIuXJC1uKXv0nwDOn9V2O/DD\nVfX3gL8AruyZ93BVbexulw+nzKXZsGPDcq5OklaFRYO+qu4GnprV9idVdai7+yXg5BHUtuwmJyfH\nXYIkDd0wxuj/BfBHPfdP7YZt/izJW+Z7UJKtSXYm2Tk1NTWEMiRJcxko6JN8ADgEfLJr2g+8rqo2\nAr8KfCrJq+Z6bFVtr6pNVbVpYmJikDJeYs+ZZwFw9cUXDu05JWk16zvok1wKXAi8u6oKoKqer6on\nu+l7gIeB1w+hTklSn/oK+iTnA78O/ExVfbunfSLJEd30acAZwCPDKHS53HHn6eMuQZKG6sjFFkhy\nPXAesC7JPuCDTJ9lcxRwexKAL3Vn2JwL/Psk3wVeBC6vqqfmfGJJ0rJYNOirassczR+fZ9mbgZsH\nLUqSNDx+MlaSGmfQ4xk6ktpm0EtS4wx6SWqcQS9JjTPoJalxBr0kNc6gl6TGGfSS1DiDvrNv2+fH\nXYIkjYRBL0mNM+glqXEGvSQ1rumgd9xdkhoPekmSQS9JzTPoJalxBr0kNW7NB/1HL79z3CVI0kg1\nH/STk5PjLkGSxqr5oJektW7RoE9yXZKDSXb3tL06ye1JHux+Ht8z78okDyV5IMnbRlW4JGlplrJH\n/wng/Flt24A7quoM4I7uPknOBjYDb+we87EkRwytWknSYVs06KvqbuCpWc0XATu66R3AO3rab6iq\n56vqUeAh4Jwh1SpJ6kO/Y/QnVNX+bvqbwAnd9EnA4z3L7evaXibJ1iQ7k+ycmprqswxJ0mIGPhhb\nVQVUH4/bXlWbqmrTxMTEoGUs6I47Tx/p80vSStZv0B9IciJA9/Ng1/4EcErPcid3bZKkMek36G8F\nLummLwE+09O+OclRSU4FzgC+PFiJkqRBHLnYAkmuB84D1iXZB3wQ+E/ATUkuAx4D3gVQVfcluQn4\nBnAIeF9VvTCi2iVJS7Bo0FfVlnlmvXWe5a8CrhqkqJGbPBYmvzXuKiRpWfjJWElq3JoL+vXbbht3\nCZK0rNZc0EvSWmPQS1LjDHpJatyaDfoNOzaMuwRJWhZrNuglaa0w6CWpcQa9JDXOoJekxhn0ktQ4\ng16SGremg37PmWeNuwRJGrk1HfSStBYY9JLUOINekhpn0EtS4wx6SWqcQS9JjTPoJalxBr0kNe7I\nfh+Y5A3AjT1NpwG/ARwH/Ctgqmt/f1V9tu8KJUkD6XuPvqoeqKqNVbUR+FHg28At3eyPzMxbKSH/\n2rt2jbsESRqLYQ3dvBV4uKoeG9LzSZKGZFhBvxm4vuf+FUnuTXJdkuPnekCSrUl2Jtk5NTU11yKS\npCEYOOiTvAL4GeC/dU3XMD1evxHYD1w91+OqantVbaqqTRMTE4OWIUmaxzD26N8OfLWqDgBU1YGq\neqGqXgSuBc4ZwjqGwnF6SWvRMIJ+Cz3DNklO7Jn3TmD3ENYhSepT36dXAiR5JfBPgff2NH8oyUag\ngL2z5kmSltlAQV9V/xd4zay29wxUkSRpqPxkrCQ1zqCXpMYZ9JLUOINekhpn0EtS4wx6SWqcQS9J\njTPoJalxBr0kNc6gl6TGGfSS1DiDXpIaZ9BLUuMMeklqnEEvSY0z6CWpcQa9JDXOoJekxhn0ktQ4\ng16SGmfQS1LjjhzkwUn2As8CLwCHqmpTklcDNwLrgb3Au6rq/wxWpiSpX8PYo/+JqtpYVZu6+9uA\nO6rqDOCO7r4kaUxGMXRzEbCjm94BvGME65AkLdGgQV/A55Lck2Rr13ZCVe3vpr8JnDDXA5NsTbIz\nyc6pqakBy5AkzWegMXrgzVX1RJIfBG5Pcn/vzKqqJDXXA6tqO7AdYNOmTXMuI0ka3EB79FX1RPfz\nIHALcA5wIMmJAN3Pg4MWKUnqX99Bn+SVSY6ZmQZ+CtgN3Apc0i12CfCZQYuUJPVvkKGbE4Bbksw8\nz6eq6n8m+QpwU5LLgMeAdw1epiSpX30HfVU9Avz9OdqfBN46SFGSpOHxk7GS1DiDXpIaZ9BLGtie\nM88adwlagEEvSY0z6CWpcQa9pOZMTk6Ou4QVxaCXNDRXX3zhml7/SmXQSw3wYKgWYtBLUuMMeklq\nnEEvqX+Tx467Ai2BQS9JjTPoJalxBr2kJt1x5+njLmHFMOglqXEGvaSh+Ojld467BM3DoJekxhn0\nktQ4g15SExw6mp9BL0mNM+glNWXfts+Pu4QVp++gT3JKkruSfCPJfUl+qWufTPJEkl3d7YLhlStJ\nfVjjl2o4coDHHgL+TVV9NckxwD1Jbu/mfaSqfmvw8iRJg+p7j76q9lfVV7vpZ4E9wEnDKkzS6tQ7\ndPLau3aNsRLNGMoYfZL1wJuAP++arkhyb5Lrkhw/z2O2JtmZZOfU1NQwypA0Bht2bBh3CVrEwEGf\n5GjgZuCXq+oZ4BrgNGAjsB+4eq7HVdX2qtpUVZsmJiYGLUNas9ZC0M68S7jjztN9l9CHgYI+yfcz\nHfKfrKo/AKiqA1X1QlW9CFwLnDN4mZKWyrNOXmr9ttvGXcLYDXLWTYCPA3uq6sM97Sf2LPZOYHf/\n5UlS/+bb+1+OLxFfSe88Bjnr5h8B7wG+nmSmR+8HtiTZCBSwF3jvQBVKkgbSd9BX1ReAzDHrs/2X\nI2klm5ycZHJyctxl6DD5yVhJa8KGHRvYc+ZZ4y5jLAz6NcSDUm1r/aJeq/GdxEoZpzfoJalxBr2k\nkfA7W1cOg16SGmfQS1pWrR9LWIkMekl96efg/lo962XcDHpJq54vIAsz6CUN3VynQq6Fi6+tVAa9\n1KBRnHM+85yeTbP6GPSS1DiDXmuel/VdW9biWT8G/QoxirAxwF5uTY8TD/ELsg/no/1eemP8DPrG\njer6IEsZp122a5MsEmCzQ2nPmWcty17dsvR/CX1fKddbGaaV/uKx0o5jGPTLYKVt9Jattrfl+7Z9\nfqgvCPN9ocbYg3GI7yZ0+Ax6Nan3O0Y1t+X4liWtDAa9JDXOoB+WMbw17XfstfeA5FD26lbA2/KV\n/KUSS9lOh/POY5B3KXMdjF6N13lf7Zb73ZRBr5GY64yf2ePEM+Ppg5wdtNSx5/mWW9Z/uMljFzzr\n53BeuAc5wDrXC+JyD3FdffGFa2boaOZvb5w7Iwb9gF57166XhMhK3asctZk/4vkOhs515gusnHHi\nlbJXu9wHTVs4BXc5/+dW6zEfg34EesOuN0B6X9lnllv2oFtgmGVYf8QL9mkZhnmW+judvdxS+7+U\n5WYH6LACfFgvSHO9IK/G0zCX63MRS3lBHPff/UJGFvRJzk/yQJKHkmwb1XpWqqsvvnDuP45ug8+1\nF9L3P3E3JLDnzLP+Zq969h/dQv/Ewz7Fb7bZ655vnHjke0tL+Gfr94NAM797WPyFZljvZsZ+yuS4\nrYBjQ3NZKe8Oe40k6JMcAXwUeDtwNrAlydmjWJckaWGj2qM/B3ioqh6pqr8GbgAuGtG6Voxhvo0c\n9CBjr7n2lBcaT1+/7bbpvaUl7DEttv6+99KHsPfd757VUn6nf7PuWQdYZ/9O5+v/cnywazWMJ4/z\nGMG41j2OD/Wlqob/pMnPAudX1b/s7r8H+AdV9Ys9y2wFtnZ33wA8cBirWAf81ZDKXS3s89pgn9eG\nYfX5h6pqYrGFjhzCivpSVduB7f08NsnOqto05JJWNPu8NtjntWG5+zyqoZsngFN67p/ctUmSltmo\ngv4rwBlJTk3yCmAzcOuI1iVJWsBIhm6q6lCSXwT+GDgCuK6q7hviKvoa8lnl7PPaYJ/XhmXt80gO\nxkqSVg4/GStJjTPoJalxqy7o18qlFZLsTfL1JLuS7OzaXp3k9iQPdj+PH3edg0hyXZKDSXb3tM3b\nxyRXdtv9gSRvG0/Vg5mnz5NJnui29a4kF/TMW9V9TnJKkruSfCPJfUl+qWtvdjsv0OfxbeeqWjU3\npg/sPgycBrwC+Bpw9rjrGlFf9wLrZrV9CNjWTW8DfnPcdQ7Yx3OBHwF2L9ZHpi+l8TXgKODU7u/g\niHH3YUh9ngR+bY5lV32fgROBH+mmjwH+outXs9t5gT6PbTuvtj36NXlphR4XATu66R3AO8ZYy8Cq\n6m7gqVnN8/XxIuCGqnq+qh4FHmL672FVmafP81n1fa6q/VX11W76WWAPcBINb+cF+jyfkfd5tQX9\nScDjPff3sfAvcDUr4HNJ7ukuFwFwQlXt76a/CZwwntJGar4+tr7tr0hybze0MzOM0VSfk6wH3gT8\nOWtkO8/qM4xpO6+2oF9L3lxVG5m+Auj7kpzbO7Om3/M1fW7sWuhj5xqmhyM3AvuBq8dbzvAlORq4\nGfjlqnqmd16r23mOPo9tO6+2oF8zl1aoqie6nweBW5h+K3cgyYkA3c+D46twZObrY7PbvqoOVNUL\nVfUicC3fe9veRJ+TfD/TgffJqvqDrrnp7TxXn8e5nVdb0K+JSyskeWWSY2amgZ8CdjPd10u6xS4B\nPjOeCkdqvj7eCmxOclSSU4EzgC+Pob6hmwm8zjuZ3tbQQJ+TBPg4sKeqPtwzq9ntPF+fx7qdx32E\nuo8j2hcwfRT7YeAD465nRH08jemj8F8D7pvpJ/Aa4A7gQeBzwKvHXeuA/bye6bew32V6XPKyhfoI\nfKDb7g8Abx93/UPs8+8DXwfu7f7pT2ylz8CbmR6WuRfY1d0uaHk7L9DnsW1nL4EgSY1bbUM3kqTD\nZNBLUuMMeklqnEEvSY0z6CWpcQa9JDXOoJekxv1/ubjPTIJkr48AAAAASUVORK5CYII=\n",
+      "text/plain": [
+       "<matplotlib.figure.Figure at 0x122342be0>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "plt.hist(sitk.GetArrayViewFromImage(outputImg_Gray))    # plot histogram\n",
+    "plt.title(\"Histogram of the Grayscale Image\")\n",
+    "plt.xlabel(\"Pixel Intensity\")\n",
+    "plt.ylabel(\"Occurance\")\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "95\n"
+     ]
+    }
+   ],
+   "source": [
+    "myOtsuSeg = myOtsuThresholding(outputImg_Gray)    # calculate otsu threshold using my method\n",
+    "sitk.Show(myOtsuSeg)    # image format is in UInt 8, pixel values are 1 and 0, therefore all black"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "94.0\n"
+     ]
+    }
+   ],
+   "source": [
+    "Otsu_Filter = sitk.OtsuThresholdImageFilter()\n",
+    "Otsu_Filter.SetInsideValue(1)\n",
+    "Otsu_Filter.SetOutsideValue(0)\n",
+    "SitkOtsuSeg = Otsu_Filter.Execute(outputImg_Gray)\n",
+    "print( Otsu_Filter.GetThreshold())     # calculate otsu threshold using sitk function"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Maximum entropy occurs at intensity: 127\n"
+     ]
+    }
+   ],
+   "source": [
+    "myMaxEntropySeg = myMaxEntropy(outputImg_Gray)    # calculate max entropy using my method\n",
+    "sitk.Show(myMaxEntropySeg)    # image format is in UInt 8, pixel values are 1 and 0, therefore all black"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "127.0\n"
+     ]
+    }
+   ],
+   "source": [
+    "MaxEntropy_Filter = sitk.MaximumEntropyThresholdImageFilter()\n",
+    "MaxEntropy_Filter.SetInsideValue(1)\n",
+    "MaxEntropy_Filter.SetOutsideValue(0)\n",
+    "SitkEntropySeg = MaxEntropy_Filter.Execute(outputImg_Gray)\n",
+    "print(MaxEntropy_Filter.GetThreshold())    # calculate max entropy using sitk function"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0.8833857442348009\n",
+      "0.9380826492277723\n",
+      "0.0\n",
+      "0.11661425576519917\n"
+     ]
+    }
+   ],
+   "source": [
+    "overlap_measures_filter = sitk.LabelOverlapMeasuresImageFilter()\n",
+    "overlap_measures_filter.Execute( myMaxEntropySeg,myOtsuSeg )\n",
+    "#Jaccard Similarity Coefficient\n",
+    "print( overlap_measures_filter.GetJaccardCoefficient())\n",
+    "#Dice Similarity Coefficient\n",
+    "print( overlap_measures_filter.GetDiceCoefficient())\n",
+    "#False Positive Rate\n",
+    "print(overlap_measures_filter.GetFalsePositiveError())\n",
+    "#False Negative Rate\n",
+    "print(overlap_measures_filter.GetFalseNegativeError())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "#Jaccard and Dice are monotonic to each other. J=DSC/(2−DSC), and DSC=2J/(1+J)\n",
+    "#Jaccard coefficient is always larger than Dice metric except at the extrema  {0,1} where they are equal. \n",
+    "#Since we can convert one to the other, it means that both of the metrics measure the same aspects \n",
+    "#and provide the same system ranking. \n",
+    "#Therefore, it does not provide additional information to use them together as validation metrices."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.4.5"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
